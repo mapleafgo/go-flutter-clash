@@ -3,7 +3,7 @@ module github.com/fanlide/go-flutter-clash/go
 go 1.15
 
 require (
-	github.com/Dreamacro/clash v1.2.0 // indirect
+	github.com/Dreamacro/clash v1.2.0
 	github.com/go-flutter-desktop/go-flutter v0.42.0
 	github.com/miekg/dns v1.1.34 // indirect
 	github.com/oschwald/maxminddb-golang v1.7.0 // indirect

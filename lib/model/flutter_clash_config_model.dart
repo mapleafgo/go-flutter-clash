@@ -5,21 +5,21 @@ part 'flutter_clash_config_model.g.dart';
 @JsonSerializable()
 class FlutterClashConfig {
   @JsonKey(name: "port")
-  int port = 0;
+  int port;
   @JsonKey(name: "socks-port")
-  int socksPort = 0;
+  int socksPort;
   @JsonKey(name: "redir-port")
-  int redirPort = 0;
+  int redirPort;
   @JsonKey(name: "mixed-port")
-  int mixedPort = 7890;
+  int mixedPort;
   @JsonKey(name: "allow-lan")
-  bool allowLan = false;
+  bool allowLan;
   @JsonKey(name: "mode", fromJson: _stringToMode, toJson: _modeToString)
   Mode mode;
   @JsonKey(name: "log-level")
-  String logLevel = "error";
+  String logLevel;
   @JsonKey(name: "ipv6")
-  bool ipv6 = false;
+  bool ipv6;
 
   FlutterClashConfig({
     this.port,
@@ -31,6 +31,17 @@ class FlutterClashConfig {
     this.logLevel,
     this.ipv6,
   });
+
+  factory FlutterClashConfig.defaultConfig() => FlutterClashConfig(
+        port: 0,
+        socksPort: 0,
+        redirPort: 0,
+        mixedPort: 7890,
+        allowLan: false,
+        mode: Mode.Rule,
+        logLevel: "info",
+        ipv6: false,
+      );
 
   factory FlutterClashConfig.fromJson(Map<String, dynamic> json) =>
       _$FlutterClashConfigFromJson(json);

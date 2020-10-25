@@ -126,10 +126,14 @@ func UnmarshalRawConfig(profile string, cfg string) (*RawConfig, error) {
 		},
 	}
 
-	if err := json.Unmarshal([]byte(profile), &rawCfg); err != nil {
+	profileJSON := json.NewDecoder(strings.NewReader(profile))
+	profileJSON.UseNumber()
+	if err := profileJSON.Decode(&rawCfg); err != nil {
 		return nil, err
 	}
-	if err := json.Unmarshal([]byte(cfg), &rawCfg); err != nil {
+	cfgJSON := json.NewDecoder(strings.NewReader(cfg))
+	cfgJSON.UseNumber()
+	if err := cfgJSON.Decode(&rawCfg); err != nil {
 		return nil, err
 	}
 
