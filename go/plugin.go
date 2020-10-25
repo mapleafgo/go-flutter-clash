@@ -2,8 +2,10 @@ package go_flutter_clash
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 
-	CC "github.com/Dreamacro/clash/config"
+	C "github.com/Dreamacro/clash/constant"
 	"github.com/Dreamacro/clash/hub/executor"
 	"github.com/Dreamacro/clash/hub/route"
 	"github.com/fanlide/go-flutter-clash/go/config"
@@ -31,7 +33,12 @@ func (p *GoFlutterClashPlugin) initClash(arguments interface{}) (reply interface
 		var homeDir string
 		if params[0] != nil {
 			homeDir = params[0].(string)
-			return nil, CC.Init(homeDir)
+			if !filepath.IsAbs(homeDir) {
+				currentDir, _ := os.Getwd()
+				homeDir = filepath.Join(currentDir, homeDir)
+			}
+			C.SetHomeDir(homeDir)
+			return nil, nil
 		}
 	}
 	return nil, errors.New("参数有误")
