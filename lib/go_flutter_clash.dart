@@ -13,14 +13,14 @@ import 'model/flutter_clash_config_model.dart';
 class GoFlutterClash {
   static const MethodChannel _channel = const MethodChannel('go_flutter_clash');
 
+  /// 初始化clash
+  static Future<void> init(String homeDir) =>
+      _channel.invokeMethod('init', [homeDir]);
+
   /// 启动clash
   static Future<void> start(
     String profile,
     FlutterClashConfig fcc,
-  ) {
-    return _channel.invokeMethod(
-      'start',
-      [profile, jsonEncode(fcc)],
-    );
-  }
+  ) =>
+      _channel.invokeMethod('start', [profile, jsonEncode(fcc)]);
 }

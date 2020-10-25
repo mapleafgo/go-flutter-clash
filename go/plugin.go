@@ -3,6 +3,7 @@ package go_flutter_clash
 import (
 	"errors"
 
+	CC "github.com/Dreamacro/clash/config"
 	"github.com/Dreamacro/clash/hub/executor"
 	"github.com/Dreamacro/clash/hub/route"
 	"github.com/fanlide/go-flutter-clash/go/config"
@@ -20,8 +21,20 @@ var _ flutter.Plugin = &GoFlutterClashPlugin{} // compile-time type check
 // InitPlugin initializes the plugin.
 func (p *GoFlutterClashPlugin) InitPlugin(messenger plugin.BinaryMessenger) error {
 	channel := plugin.NewMethodChannel(messenger, channelName, plugin.StandardMethodCodec{})
+	channel.HandleFunc("init", p.initClash)
 	channel.HandleFunc("start", p.start)
 	return nil
+}
+
+func (p *GoFlutterClashPlugin) initClash(arguments interface{}) (reply interface{}, err error) {
+	if params, ok := arguments.([]interface{}); ok {
+		var homeDir string
+		if params[0] != nil {
+			homeDir = params[0].(string)
+			return nil, CC.Init(homeDir)
+		}
+	}
+	return nil, errors.New("参数有误")
 }
 
 func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, err error) {
