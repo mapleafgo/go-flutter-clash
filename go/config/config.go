@@ -68,6 +68,7 @@ type RawConfig struct {
 	Port               int          `json:"port"`
 	SocksPort          int          `json:"socks-port"`
 	RedirPort          int          `json:"redir-port"`
+	TProxyPort         int          `json:"tproxy-port"`
 	MixedPort          int          `json:"mixed-port"`
 	Authentication     []string     `json:"authentication"`
 	AllowLan           bool         `json:"allow-lan"`
@@ -198,6 +199,7 @@ func parseGeneral(cfg *RawConfig) (*CC.General, error) {
 			Port:        cfg.Port,
 			SocksPort:   cfg.SocksPort,
 			RedirPort:   cfg.RedirPort,
+			TProxyPort:  cfg.TProxyPort,
 			MixedPort:   cfg.MixedPort,
 			AllowLan:    cfg.AllowLan,
 			BindAddress: cfg.BindAddress,
@@ -306,11 +308,16 @@ func parseProxies(cfg *RawConfig) (proxies map[string]C.Proxy, providersMap map[
 	for _, v := range proxyList {
 		ps = append(ps, proxies[v])
 	}
-	hc := provider.NewHealthCheck(ps, "", 0)
+	hc := provider.NewHealthCheck(ps, "", 0, true)
 	pd, _ := provider.NewCompatibleProvider(provider.ReservedName, ps, hc)
 	providersMap[provider.ReservedName] = pd
 
-	global := outboundgroup.NewSelector("GLOBAL", []provider.ProxyProvider{pd})
+	global := outboundgroup.NewSelector(
+		&outboundgroup.GroupCommonOption{
+			Name: "GLOBAL",
+		},
+		[]provider.ProxyProvider{pd},
+	)
 	proxies["GLOBAL"] = outbound.NewProxy(global)
 	return proxies, providersMap, nil
 }
@@ -351,10 +358,6 @@ func parseRules(cfg *RawConfig, proxies map[string]C.Proxy) ([]C.Rule, error) {
 
 		parsed, parseErr := R.ParseRule(rule[0], payload, target, params)
 		if parseErr != nil {
-			if parseErr == R.ErrPlatformNotSupport {
-				log.Warnln("Rules[%d] [%s] don't support current OS, skip", idx, line)
-				continue
-			}
 			return nil, fmt.Errorf("rules[%d] [%s] error: %s", idx, line, parseErr.Error())
 		}
 

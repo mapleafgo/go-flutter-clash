@@ -8,9 +8,9 @@ import (
 	C "github.com/Dreamacro/clash/constant"
 	"github.com/Dreamacro/clash/hub/executor"
 	"github.com/Dreamacro/clash/hub/route"
-	"github.com/fanlide/go-flutter-clash/go/config"
 	flutter "github.com/go-flutter-desktop/go-flutter"
 	"github.com/go-flutter-desktop/go-flutter/plugin"
+	"github.com/mapleafgo/go-flutter-clash/go/config"
 )
 
 const channelName = "go_flutter_clash"
@@ -41,7 +41,7 @@ func (p *GoFlutterClashPlugin) initClash(arguments interface{}) (reply interface
 			return nil, nil
 		}
 	}
-	return nil, errors.New("参数有误")
+	return nil, errors.New("props error")
 }
 
 func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, err error) {
@@ -61,5 +61,5 @@ func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, 
 		executor.ApplyConfig(cfg, true)
 		return nil, nil
 	}
-	return nil, errors.New("参数有误")
+	return nil, errors.New("props error")
 }

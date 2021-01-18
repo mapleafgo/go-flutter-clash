@@ -10,6 +10,8 @@ class FlutterClashConfig {
   int socksPort;
   @JsonKey(name: "redir-port")
   int redirPort;
+  @JsonKey(name: "tproxy-port")
+  int tproxyPort;
   @JsonKey(name: "mixed-port")
   int mixedPort;
   @JsonKey(name: "allow-lan")
@@ -25,6 +27,7 @@ class FlutterClashConfig {
     this.port,
     this.mode,
     this.allowLan,
+    this.tproxyPort,
     this.mixedPort,
     this.socksPort,
     this.redirPort,
@@ -36,6 +39,7 @@ class FlutterClashConfig {
         port: 0,
         socksPort: 0,
         redirPort: 0,
+        tproxyPort: 0,
         mixedPort: 7890,
         allowLan: false,
         mode: Mode.Rule,
