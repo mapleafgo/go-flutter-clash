@@ -1,9 +1,13 @@
 package go_flutter_clash
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	T "github.com/Dreamacro/clash/tunnel"
 	"os"
 	"path/filepath"
+	"time"
 
 	C "github.com/Dreamacro/clash/constant"
 	"github.com/Dreamacro/clash/hub/executor"
@@ -16,15 +20,17 @@ import (
 const channelName = "go_flutter_clash"
 
 // GoFlutterClashPlugin implements flutter.Plugin and handles method.
-type GoFlutterClashPlugin struct{}
+type GoFlutterClashPlugin struct {
+	channel *plugin.MethodChannel
+}
 
 var _ flutter.Plugin = &GoFlutterClashPlugin{} // compile-time type check
 
 // InitPlugin initializes the plugin.
 func (p *GoFlutterClashPlugin) InitPlugin(messenger plugin.BinaryMessenger) error {
-	channel := plugin.NewMethodChannel(messenger, channelName, plugin.StandardMethodCodec{})
-	channel.HandleFunc("init", p.initClash)
-	channel.HandleFunc("start", p.start)
+	p.channel = plugin.NewMethodChannel(messenger, channelName, plugin.StandardMethodCodec{})
+	p.channel.HandleFunc("init", p.initClash)
+	p.channel.HandleFunc("start", p.start)
 	return nil
 }
 
@@ -59,7 +65,26 @@ func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, 
 		}
 		go route.Start("127.0.0.1:9090", cfg.General.Secret)
 		executor.ApplyConfig(cfg, true)
+		go p.traffic()
 		return nil, nil
 	}
 	return nil, errors.New("props error")
+}
+
+func (p *GoFlutterClashPlugin) traffic() {
+	tick := time.NewTicker(time.Second)
+	defer tick.Stop()
+	t := T.DefaultManager
+	buf := &bytes.Buffer{}
+	for range tick.C {
+		buf.Reset()
+		up, down := t.Now()
+		if err := json.NewEncoder(buf).Encode(route.Traffic{
+			Up:   up,
+			Down: down,
+		}); err != nil {
+			break
+		}
+		_ = p.channel.InvokeMethod("traffic", string(buf.Bytes()))
+	}
 }
