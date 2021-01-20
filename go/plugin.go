@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	T "github.com/Dreamacro/clash/tunnel"
 	"os"
 	"path/filepath"
 	"time"
+
+	T "github.com/Dreamacro/clash/tunnel"
 
 	C "github.com/Dreamacro/clash/constant"
 	"github.com/Dreamacro/clash/hub/executor"
@@ -22,6 +23,7 @@ const channelName = "go_flutter_clash"
 // GoFlutterClashPlugin implements flutter.Plugin and handles method.
 type GoFlutterClashPlugin struct {
 	channel *plugin.MethodChannel
+	status  bool
 }
 
 var _ flutter.Plugin = &GoFlutterClashPlugin{} // compile-time type check
@@ -31,23 +33,20 @@ func (p *GoFlutterClashPlugin) InitPlugin(messenger plugin.BinaryMessenger) erro
 	p.channel = plugin.NewMethodChannel(messenger, channelName, plugin.StandardMethodCodec{})
 	p.channel.HandleFunc("init", p.initClash)
 	p.channel.HandleFunc("start", p.start)
+	p.channel.HandleFunc("status", p.getStatus)
 	return nil
 }
 
 func (p *GoFlutterClashPlugin) initClash(arguments interface{}) (reply interface{}, err error) {
-	if params, ok := arguments.([]interface{}); ok {
-		var homeDir string
-		if params[0] != nil {
-			homeDir = params[0].(string)
-			if !filepath.IsAbs(homeDir) {
-				currentDir, _ := os.Getwd()
-				homeDir = filepath.Join(currentDir, homeDir)
-			}
-			C.SetHomeDir(homeDir)
-			return nil, nil
+	if homeDir, ok := arguments.(string); ok {
+		if !filepath.IsAbs(homeDir) {
+			currentDir, _ := os.Getwd()
+			homeDir = filepath.Join(currentDir, homeDir)
 		}
+		C.SetHomeDir(homeDir)
+		return nil, nil
 	}
-	return nil, errors.New("props error")
+	return nil, errors.New("arguments error")
 }
 
 func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, err error) {
@@ -65,13 +64,18 @@ func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, 
 		}
 		go route.Start("127.0.0.1:9090", cfg.General.Secret)
 		executor.ApplyConfig(cfg, true)
-		go p.traffic()
+		go p.trafficHandler()
+		p.status = true
 		return nil, nil
 	}
 	return nil, errors.New("props error")
 }
 
-func (p *GoFlutterClashPlugin) traffic() {
+func (p *GoFlutterClashPlugin) getStatus(interface{}) (reply interface{}, err error) {
+	return p.status, nil
+}
+
+func (p *GoFlutterClashPlugin) trafficHandler() {
 	tick := time.NewTicker(time.Second)
 	defer tick.Stop()
 	t := T.DefaultManager
@@ -85,6 +89,6 @@ func (p *GoFlutterClashPlugin) traffic() {
 		}); err != nil {
 			break
 		}
-		_ = p.channel.InvokeMethod("traffic", string(buf.Bytes()))
+		_ = p.channel.InvokeMethod("trafficHandler", string(buf.Bytes()))
 	}
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/Dreamacro/clash/component/auth"
 	"github.com/Dreamacro/clash/component/fakeip"
 	"github.com/Dreamacro/clash/component/trie"
-	CC "github.com/Dreamacro/clash/config"
+	CF "github.com/Dreamacro/clash/config"
 	C "github.com/Dreamacro/clash/constant"
 	"github.com/Dreamacro/clash/dns"
 	"github.com/Dreamacro/clash/log"
@@ -84,14 +84,14 @@ type RawConfig struct {
 	ProxyProvider map[string]map[string]interface{} `json:"proxy-providers"`
 	Hosts         map[string]string                 `json:"hosts"`
 	DNS           RawDNS                            `json:"dns"`
-	Experimental  CC.Experimental                   `json:"experimental"`
+	Experimental  CF.Experimental                   `json:"experimental"`
 	Proxy         []map[string]interface{}          `json:"proxies"`
 	ProxyGroup    []map[string]interface{}          `json:"proxy-groups"`
 	Rule          []string                          `json:"rules"`
 }
 
 // Parse config
-func Parse(profile string, cfg string) (*CC.Config, error) {
+func Parse(profile string, cfg string) (*CF.Config, error) {
 	rawCfg, err := UnmarshalRawConfig(profile, cfg)
 	if err != nil {
 		return nil, err
@@ -141,10 +141,10 @@ func UnmarshalRawConfig(profile string, cfg string) (*RawConfig, error) {
 	return rawCfg, nil
 }
 
-func ParseRawConfig(rawCfg *RawConfig) (*CC.Config, error) {
-	config := &CC.Config{}
+func ParseRawConfig(rawCfg *RawConfig) (*CF.Config, error) {
+	config := &CF.Config{}
 
-	config.Experimental = &CC.Experimental{}
+	config.Experimental = &CF.Experimental{}
 
 	general, err := parseGeneral(rawCfg)
 	if err != nil {
@@ -182,7 +182,7 @@ func ParseRawConfig(rawCfg *RawConfig) (*CC.Config, error) {
 	return config, nil
 }
 
-func parseGeneral(cfg *RawConfig) (*CC.General, error) {
+func parseGeneral(cfg *RawConfig) (*CF.General, error) {
 	externalUI := cfg.ExternalUI
 
 	// checkout externalUI exist
@@ -194,8 +194,8 @@ func parseGeneral(cfg *RawConfig) (*CC.General, error) {
 		}
 	}
 
-	return &CC.General{
-		Inbound: CC.Inbound{
+	return &CF.General{
+		Inbound: CF.Inbound{
 			Port:        cfg.Port,
 			SocksPort:   cfg.SocksPort,
 			RedirPort:   cfg.RedirPort,
@@ -204,7 +204,7 @@ func parseGeneral(cfg *RawConfig) (*CC.General, error) {
 			AllowLan:    cfg.AllowLan,
 			BindAddress: cfg.BindAddress,
 		},
-		Controller: CC.Controller{
+		Controller: CF.Controller{
 			ExternalController: cfg.ExternalController,
 			ExternalUI:         cfg.ExternalUI,
 			Secret:             cfg.Secret,
@@ -466,17 +466,17 @@ func parseFallbackIPCIDR(ips []string) ([]*net.IPNet, error) {
 	return ipNets, nil
 }
 
-func parseDNS(cfg RawDNS, hosts *trie.DomainTrie) (*CC.DNS, error) {
+func parseDNS(cfg RawDNS, hosts *trie.DomainTrie) (*CF.DNS, error) {
 	if cfg.Enable && len(cfg.NameServer) == 0 {
 		return nil, fmt.Errorf("if DNS configuration is turned on, NameServer cannot be empty")
 	}
 
-	dnsCfg := &CC.DNS{
+	dnsCfg := &CF.DNS{
 		Enable:       cfg.Enable,
 		Listen:       cfg.Listen,
 		IPv6:         cfg.IPv6,
 		EnhancedMode: cfg.EnhancedMode,
-		FallbackFilter: CC.FallbackFilter{
+		FallbackFilter: CF.FallbackFilter{
 			IPCIDR: []*net.IPNet{},
 		},
 	}
