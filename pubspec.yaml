@@ -1,8 +1,8 @@
 name: go_flutter_clash
-description: A new flutter plugin project.
-version: 0.0.1
-author:
-homepage: /
+description: go-flutter support for clash
+version: 0.0.2
+homepage: https://github.com/mapleafgo/go-flutter-clash
+publish_to: https://pub.dartlang.org
 
 environment:
   sdk: ">=2.10.0 <3.0.0"
