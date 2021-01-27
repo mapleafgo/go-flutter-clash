@@ -12,13 +12,13 @@ import 'model/flutter_clash_config_model.dart';
 
 class GoFlutterClash {
   static const MethodChannel _channel = const MethodChannel('go_flutter_clash');
-  static final Map<String, Function> _callHanders = {};
+  static final Map<String, Function(dynamic)> _callHanders = {};
 
   /// 初始化clash
   static Future<void> init(String homeDir) async {
     _channel.setMethodCallHandler((MethodCall call) async {
       if (_callHanders.containsKey(call.method)) {
-        _callHanders[call.method]();
+        Function.apply(_callHanders[call.method], call.arguments);
       }
     });
     return _channel.invokeMethod('init', homeDir);
@@ -35,7 +35,7 @@ class GoFlutterClash {
   static Future<bool> status() => _channel.invokeMethod('status');
 
   /// 实时网速回调
-  static void trafficHandler(Function callback) {
-    _callHanders.putIfAbsent("trafficHandler", callback);
+  static void trafficHandler(Function(dynamic) callback) {
+    _callHanders.putIfAbsent("trafficHandler", () => callback);
   }
 }
