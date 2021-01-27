@@ -18,7 +18,7 @@ class GoFlutterClash {
   static Future<void> init(String homeDir) async {
     _channel.setMethodCallHandler((MethodCall call) async {
       if (_callHanders.containsKey(call.method)) {
-        Function.apply(_callHanders[call.method], call.arguments);
+        Function.apply(_callHanders[call.method], [call.arguments]);
       }
     });
     return _channel.invokeMethod('init', homeDir);
