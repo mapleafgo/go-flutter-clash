@@ -36,6 +36,6 @@ class GoFlutterClash {
 
   /// 实时网速回调
   static void trafficHandler(Function(dynamic) callback) {
-    _callHanders.putIfAbsent("trafficHandler", () => callback);
+    _callHanders["trafficHandler"] = callback;
   }
 }
