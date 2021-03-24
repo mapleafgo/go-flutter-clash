@@ -18,7 +18,7 @@ class GoFlutterClash {
   static Future<void> init(String homeDir) async {
     _channel.setMethodCallHandler((MethodCall call) async {
       if (_callHanders.containsKey(call.method)) {
-        Function.apply(_callHanders[call.method], [call.arguments]);
+        Function.apply(_callHanders[call.method]!, [call.arguments]);
       }
     });
     return _channel.invokeMethod('init', homeDir);
@@ -32,7 +32,7 @@ class GoFlutterClash {
       _channel.invokeMethod('start', [profile, jsonEncode(fcc)]);
 
   /// 当前开启状态
-  static Future<bool> status() => _channel.invokeMethod('status');
+  static Future<bool?> status() => _channel.invokeMethod('status');
 
   /// 实时网速回调
   static void trafficHandler(Function(dynamic) callback) {

@@ -5,23 +5,23 @@ part 'flutter_clash_config_model.g.dart';
 @JsonSerializable()
 class FlutterClashConfig {
   @JsonKey(name: "port")
-  int port;
+  int? port;
   @JsonKey(name: "socks-port")
-  int socksPort;
+  int? socksPort;
   @JsonKey(name: "redir-port")
-  int redirPort;
+  int? redirPort;
   @JsonKey(name: "tproxy-port")
-  int tproxyPort;
+  int? tproxyPort;
   @JsonKey(name: "mixed-port")
-  int mixedPort;
+  int? mixedPort;
   @JsonKey(name: "allow-lan")
-  bool allowLan;
+  bool? allowLan;
   @JsonKey(name: "mode", fromJson: _stringToMode, toJson: _modeToString)
-  Mode mode;
+  Mode? mode;
   @JsonKey(name: "log-level")
-  String logLevel;
+  String? logLevel;
   @JsonKey(name: "ipv6")
-  bool ipv6;
+  bool? ipv6;
 
   FlutterClashConfig({
     this.port,
@@ -55,7 +55,7 @@ class FlutterClashConfig {
 Mode _stringToMode(String mode) =>
     ModeMap.entries.firstWhere((t) => t.value == mode).key;
 
-String _modeToString(Mode mode) => ModeMap[mode];
+String? _modeToString(Mode? mode) => ModeMap[mode];
 
 enum Mode { Rule, Global, Direct }
 const ModeMap = {
