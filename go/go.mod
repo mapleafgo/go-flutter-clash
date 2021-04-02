@@ -1,14 +1,12 @@
 module github.com/mapleafgo/go-flutter-clash/go
 
-go 1.15
+go 1.16
 
 require (
-	github.com/Dreamacro/clash v1.3.5
-	github.com/Xuanwo/go-locale v1.0.0 // indirect
-	github.com/go-flutter-desktop/go-flutter v0.42.0
-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20201108214237-06ea97f0c265 // indirect
-	github.com/gofrs/uuid v4.0.0+incompatible // indirect
-	github.com/oschwald/maxminddb-golang v1.8.0 // indirect
-	golang.org/x/sys v0.0.0-20210113181707-4bcb84eeeb78 // indirect
-	golang.org/x/text v0.3.5 // indirect
+	github.com/Dreamacro/clash v1.4.2
+	github.com/eycorsican/go-tun2socks v1.16.11
+	github.com/go-flutter-desktop/go-flutter v0.43.0
+	github.com/kr/pretty v0.1.0 // indirect
+	github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )

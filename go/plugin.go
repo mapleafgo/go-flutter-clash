@@ -4,11 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/Dreamacro/clash/tunnel/statistic"
+	"github.com/eycorsican/go-tun2socks/common/dns/blocker"
+	"github.com/eycorsican/go-tun2socks/core"
+	"github.com/eycorsican/go-tun2socks/proxy/socks"
+	"github.com/eycorsican/go-tun2socks/tun"
+	"io"
+	"log"
+	"net"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"time"
-
-	T "github.com/Dreamacro/clash/tunnel"
 
 	C "github.com/Dreamacro/clash/constant"
 	"github.com/Dreamacro/clash/hub/executor"
@@ -71,6 +79,40 @@ func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, 
 	return nil, errors.New("props error")
 }
 
+func (p *GoFlutterClashPlugin) openTun(arguments interface{}) (reply interface{}, err error) {
+	if _, ok := arguments.([]interface{}); ok {
+		proxyAddr, err := net.ResolveTCPAddr("tcp", "*:7890")
+		if err != nil {
+			log.Fatalf("invalid proxy server address: %v", err)
+		}
+		proxyHost := proxyAddr.IP.String()
+		proxyPort := uint16(proxyAddr.Port)
+		dnsServers := strings.Split("", ",")
+		core.RegisterTCPConnHandler(socks.NewTCPHandler(proxyHost, proxyPort))
+		core.RegisterUDPConnHandler(socks.NewUDPHandler(proxyHost, proxyPort, 1*time.Minute))
+		tunDev, err := tun.OpenTunDevice("Clash4Flutter", "", "", "", dnsServers, false)
+		if err != nil {
+			log.Fatalf("failed to open tun device: %v", err)
+		}
+		if runtime.GOOS == "windows" {
+			if err := blocker.BlockOutsideDns("Clash4Flutter"); err != nil {
+				log.Fatalf("failed to block outside DNS: %v", err)
+			}
+		}
+		lwipWriter := core.NewLWIPStack().(io.Writer)
+		core.RegisterOutputFn(func(data []byte) (int, error) {
+			return tunDev.Write(data)
+		})
+		go func() {
+			_, err := io.CopyBuffer(lwipWriter, tunDev, make([]byte, 1500))
+			if err != nil {
+				log.Fatalf("copying data failed: %v", err)
+			}
+		}()
+	}
+	return nil, errors.New("props error")
+}
+
 func (p *GoFlutterClashPlugin) getStatus(interface{}) (reply interface{}, err error) {
 	return p.status, nil
 }
@@ -78,7 +120,7 @@ func (p *GoFlutterClashPlugin) getStatus(interface{}) (reply interface{}, err er
 func (p *GoFlutterClashPlugin) trafficHandler() {
 	tick := time.NewTicker(time.Second)
 	defer tick.Stop()
-	t := T.DefaultManager
+	t := statistic.DefaultManager
 	buf := &bytes.Buffer{}
 	for range tick.C {
 		buf.Reset()
