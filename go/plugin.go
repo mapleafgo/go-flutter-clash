@@ -4,18 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/Dreamacro/clash/tunnel/statistic"
-	"github.com/eycorsican/go-tun2socks/common/dns/blocker"
-	"github.com/eycorsican/go-tun2socks/core"
-	"github.com/eycorsican/go-tun2socks/proxy/socks"
-	"github.com/eycorsican/go-tun2socks/tun"
-	"io"
-	"log"
-	"net"
+	"github.com/xjasonlyu/tun2socks/engine"
 	"os"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"time"
 
 	C "github.com/Dreamacro/clash/constant"
@@ -42,6 +35,9 @@ func (p *GoFlutterClashPlugin) InitPlugin(messenger plugin.BinaryMessenger) erro
 	p.channel.HandleFunc("init", p.initClash)
 	p.channel.HandleFunc("start", p.start)
 	p.channel.HandleFunc("status", p.getStatus)
+	p.channel.HandleFunc("initTun", p.initTun)
+	p.channel.HandleFunc("startTun", p.startTun)
+	p.channel.HandleFunc("stopTun", p.stopTun)
 	return nil
 }
 
@@ -79,38 +75,30 @@ func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, 
 	return nil, errors.New("props error")
 }
 
-func (p *GoFlutterClashPlugin) openTun(arguments interface{}) (reply interface{}, err error) {
-	if _, ok := arguments.([]interface{}); ok {
-		proxyAddr, err := net.ResolveTCPAddr("tcp", "*:7890")
-		if err != nil {
-			log.Fatalf("invalid proxy server address: %v", err)
+func (p *GoFlutterClashPlugin) initTun(arguments interface{}) (reply interface{}, err error) {
+	if params, ok := arguments.([]interface{}); ok {
+		var name, port string
+		if params[0] != nil {
+			name = params[0].(string)
 		}
-		proxyHost := proxyAddr.IP.String()
-		proxyPort := uint16(proxyAddr.Port)
-		dnsServers := strings.Split("", ",")
-		core.RegisterTCPConnHandler(socks.NewTCPHandler(proxyHost, proxyPort))
-		core.RegisterUDPConnHandler(socks.NewUDPHandler(proxyHost, proxyPort, 1*time.Minute))
-		tunDev, err := tun.OpenTunDevice("Clash4Flutter", "", "", "", dnsServers, false)
-		if err != nil {
-			log.Fatalf("failed to open tun device: %v", err)
+		if params[1] != nil {
+			port = params[1].(string)
 		}
-		if runtime.GOOS == "windows" {
-			if err := blocker.BlockOutsideDns("Clash4Flutter"); err != nil {
-				log.Fatalf("failed to block outside DNS: %v", err)
-			}
-		}
-		lwipWriter := core.NewLWIPStack().(io.Writer)
-		core.RegisterOutputFn(func(data []byte) (int, error) {
-			return tunDev.Write(data)
+		engine.Insert(&engine.Key{
+			LogLevel: "info",
+			Device:   fmt.Sprintf("tun://%v", name),
+			Proxy:    fmt.Sprintf("socks5://127.0.0.1:%v", port),
 		})
-		go func() {
-			_, err := io.CopyBuffer(lwipWriter, tunDev, make([]byte, 1500))
-			if err != nil {
-				log.Fatalf("copying data failed: %v", err)
-			}
-		}()
 	}
 	return nil, errors.New("props error")
+}
+
+func (p *GoFlutterClashPlugin) startTun(interface{}) (reply interface{}, err error) {
+	return nil, engine.Start()
+}
+
+func (p *GoFlutterClashPlugin) stopTun(interface{}) (reply interface{}, err error) {
+	return nil, engine.Stop()
 }
 
 func (p *GoFlutterClashPlugin) getStatus(interface{}) (reply interface{}, err error) {
