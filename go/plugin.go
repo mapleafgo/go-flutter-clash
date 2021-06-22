@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/Dreamacro/clash/tunnel/statistic"
-	"github.com/xjasonlyu/tun2socks/engine"
 	"os"
 	"path/filepath"
 	"time"
@@ -27,7 +25,7 @@ type GoFlutterClashPlugin struct {
 	status  bool
 }
 
-var _ flutter.Plugin = &GoFlutterClashPlugin{} // compile-time type check
+var _ flutter.Plugin = new(GoFlutterClashPlugin) // compile-time type check
 
 // InitPlugin initializes the plugin.
 func (p *GoFlutterClashPlugin) InitPlugin(messenger plugin.BinaryMessenger) error {
@@ -35,9 +33,6 @@ func (p *GoFlutterClashPlugin) InitPlugin(messenger plugin.BinaryMessenger) erro
 	p.channel.HandleFunc("init", p.initClash)
 	p.channel.HandleFunc("start", p.start)
 	p.channel.HandleFunc("status", p.getStatus)
-	p.channel.HandleFunc("initTun", p.initTun)
-	p.channel.HandleFunc("startTun", p.startTun)
-	p.channel.HandleFunc("stopTun", p.stopTun)
 	return nil
 }
 
@@ -75,36 +70,11 @@ func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, 
 	return nil, errors.New("props error")
 }
 
-func (p *GoFlutterClashPlugin) initTun(arguments interface{}) (reply interface{}, err error) {
-	if params, ok := arguments.([]interface{}); ok {
-		var name, port string
-		if params[0] != nil {
-			name = params[0].(string)
-		}
-		if params[1] != nil {
-			port = params[1].(string)
-		}
-		engine.Insert(&engine.Key{
-			LogLevel: "info",
-			Device:   fmt.Sprintf("tun://%v", name),
-			Proxy:    fmt.Sprintf("socks5://127.0.0.1:%v", port),
-		})
-	}
-	return nil, errors.New("props error")
-}
-
-func (p *GoFlutterClashPlugin) startTun(interface{}) (reply interface{}, err error) {
-	return nil, engine.Start()
-}
-
-func (p *GoFlutterClashPlugin) stopTun(interface{}) (reply interface{}, err error) {
-	return nil, engine.Stop()
-}
-
 func (p *GoFlutterClashPlugin) getStatus(interface{}) (reply interface{}, err error) {
 	return p.status, nil
 }
 
+// 实时网速
 func (p *GoFlutterClashPlugin) trafficHandler() {
 	tick := time.NewTicker(time.Second)
 	defer tick.Stop()

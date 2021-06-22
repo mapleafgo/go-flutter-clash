@@ -31,21 +31,8 @@ class GoFlutterClash {
   ) =>
       _channel.invokeMethod('start', [profile, jsonEncode(fcc)]);
 
-  /// 当前开启状态
+  /// 当前状态
   static Future<bool?> status() => _channel.invokeMethod('status');
-
-  /// 初始化TUN模式
-  static Future<bool?> initTun(
-    String name,
-    String port,
-  ) =>
-      _channel.invokeMethod('initTun', [name, port]);
-
-  /// 开启TUN模式
-  static Future<bool?> startTun() => _channel.invokeMethod('startTun');
-
-  /// 关闭TUN模式
-  static Future<bool?> stopTun() => _channel.invokeMethod('stopTun');
 
   /// 实时网速回调
   static void trafficHandler(Function(dynamic) callback) {
