@@ -36,7 +36,7 @@ func (p *GoFlutterClashPlugin) InitPlugin(messenger plugin.BinaryMessenger) erro
 	return nil
 }
 
-func (p *GoFlutterClashPlugin) initClash(arguments interface{}) (reply interface{}, err error) {
+func (p *GoFlutterClashPlugin) initClash(arguments any) (reply any, err error) {
 	if homeDir, ok := arguments.(string); ok {
 		if !filepath.IsAbs(homeDir) {
 			currentDir, _ := os.Getwd()
@@ -48,8 +48,8 @@ func (p *GoFlutterClashPlugin) initClash(arguments interface{}) (reply interface
 	return nil, errors.New("arguments error")
 }
 
-func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, err error) {
-	if params, ok := arguments.([]interface{}); ok {
+func (p *GoFlutterClashPlugin) start(arguments any) (reply any, err error) {
+	if params, ok := arguments.([]any); ok {
 		var profile, fcc string
 		if params[0] != nil {
 			profile = params[0].(string)
@@ -70,7 +70,7 @@ func (p *GoFlutterClashPlugin) start(arguments interface{}) (reply interface{}, 
 	return nil, errors.New("props error")
 }
 
-func (p *GoFlutterClashPlugin) getStatus(interface{}) (reply interface{}, err error) {
+func (p *GoFlutterClashPlugin) getStatus(any) (reply any, err error) {
 	return p.status, nil
 }
 

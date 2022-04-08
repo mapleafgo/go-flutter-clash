@@ -9,6 +9,7 @@ import (
 	"github.com/Dreamacro/clash/component/fakeip"
 	"github.com/Dreamacro/clash/component/trie"
 	clashConfig "github.com/Dreamacro/clash/config"
+	C "github.com/Dreamacro/clash/constant"
 	"github.com/Dreamacro/clash/dns"
 	"github.com/Dreamacro/clash/log"
 	T "github.com/Dreamacro/clash/tunnel"
@@ -16,69 +17,81 @@ import (
 
 // DNS config
 type DNS struct {
-	Enable            bool             `json:"enable"`
-	IPv6              bool             `json:"ipv6"`
-	NameServer        []dns.NameServer `json:"nameserver"`
-	Fallback          []dns.NameServer `json:"fallback"`
-	FallbackFilter    FallbackFilter   `json:"fallback-filter"`
-	Listen            string           `json:"listen"`
-	EnhancedMode      dns.EnhancedMode `json:"enhanced-mode"`
-	DefaultNameserver []dns.NameServer `json:"default-nameserver"`
+	Enable            bool             `yaml:"enable" json:"enable"`
+	IPv6              bool             `yaml:"ipv6" json:"ipv6"`
+	NameServer        []dns.NameServer `yaml:"nameserver" json:"nameserver"`
+	Fallback          []dns.NameServer `yaml:"fallback" json:"fallback"`
+	FallbackFilter    FallbackFilter   `yaml:"fallback-filter" json:"fallback-filter"`
+	Listen            string           `yaml:"listen" json:"listen"`
+	EnhancedMode      C.DNSMode        `yaml:"enhanced-mode" json:"enhanced-mode"`
+	DefaultNameserver []dns.NameServer `yaml:"default-nameserver" json:"default-nameserver"`
 	FakeIPRange       *fakeip.Pool
 	Hosts             *trie.DomainTrie
+	NameServerPolicy  map[string]dns.NameServer
 }
 
 // FallbackFilter config
 type FallbackFilter struct {
-	GeoIP  bool         `json:"geoip"`
-	IPCIDR []*net.IPNet `json:"ipcidr"`
-	Domain []string     `json:"domain"`
+	GeoIP     bool         `yaml:"geoip" json:"geoip"`
+	GeoIPCode string       `yaml:"geoip-code" json:"geoip-code"`
+	IPCIDR    []*net.IPNet `yaml:"ipcidr" json:"ipcidr"`
+	Domain    []string     `yaml:"domain" json:"domain"`
+}
+
+// Profile config
+type Profile struct {
+	StoreSelected bool `yaml:"store-selected" json:"store-selected"`
+	StoreFakeIP   bool `yaml:"store-fake-ip" json:"store-fake-ip"`
 }
 
 type RawDNS struct {
-	Enable            bool              `json:"enable"`
-	IPv6              bool              `json:"ipv6"`
-	UseHosts          bool              `json:"use-hosts"`
-	NameServer        []string          `json:"nameserver"`
-	Fallback          []string          `json:"fallback"`
-	FallbackFilter    RawFallbackFilter `json:"fallback-filter"`
-	Listen            string            `json:"listen"`
-	EnhancedMode      dns.EnhancedMode  `json:"enhanced-mode"`
-	FakeIPRange       string            `json:"fake-ip-range"`
-	FakeIPFilter      []string          `json:"fake-ip-filter"`
-	DefaultNameserver []string          `json:"default-nameserver"`
+	Enable            bool              `yaml:"enable" json:"enable"`
+	IPv6              bool              `yaml:"ipv6" json:"ipv6"`
+	UseHosts          bool              `yaml:"use-hosts" json:"use-hosts"`
+	NameServer        []string          `yaml:"nameserver" json:"nameserver"`
+	Fallback          []string          `yaml:"fallback" json:"fallback"`
+	FallbackFilter    RawFallbackFilter `yaml:"fallback-filter" json:"fallback-filter"`
+	Listen            string            `yaml:"listen" json:"listen"`
+	EnhancedMode      C.DNSMode         `yaml:"enhanced-mode" json:"enhanced-mode"`
+	FakeIPRange       string            `yaml:"fake-ip-range" json:"fake-ip-range"`
+	FakeIPFilter      []string          `yaml:"fake-ip-filter" json:"fake-ip-filter"`
+	DefaultNameserver []string          `yaml:"default-nameserver" json:"default-nameserver"`
+	NameServerPolicy  map[string]string `yaml:"nameserver-policy" json:"nameserver-policy"`
 }
 
 type RawFallbackFilter struct {
-	GeoIP  bool     `json:"geoip"`
-	IPCIDR []string `json:"ipcidr"`
-	Domain []string `json:"domain"`
+	GeoIP     bool     `yaml:"geoip" json:"geoip"`
+	GeoIPCode string   `yaml:"geoip-code" json:"geoip-code"`
+	IPCIDR    []string `yaml:"ipcidr" json:"ipcidr"`
+	Domain    []string `yaml:"domain" json:"domain"`
 }
 
 type RawConfig struct {
-	Port               int          `json:"port"`
-	SocksPort          int          `json:"socks-port"`
-	RedirPort          int          `json:"redir-port"`
-	TProxyPort         int          `json:"tproxy-port"`
-	MixedPort          int          `json:"mixed-port"`
-	Authentication     []string     `json:"authentication"`
-	AllowLan           bool         `json:"allow-lan"`
-	BindAddress        string       `json:"bind-address"`
-	Mode               T.TunnelMode `json:"mode"`
-	LogLevel           log.LogLevel `json:"log-level"`
-	IPv6               bool         `json:"ipv6"`
-	ExternalController string       `json:"external-controller"`
-	ExternalUI         string       `json:"external-ui"`
-	Secret             string       `json:"secret"`
-	Interface          string       `json:"interface-name"`
+	Port               int          `yaml:"port" json:"port"`
+	SocksPort          int          `yaml:"socks-port" json:"socks-port"`
+	RedirPort          int          `yaml:"redir-port" json:"redir-port"`
+	TProxyPort         int          `yaml:"tproxy-port" json:"tproxy-port"`
+	MixedPort          int          `yaml:"mixed-port" json:"mixed-port"`
+	Authentication     []string     `yaml:"authentication" json:"authentication"`
+	AllowLan           bool         `yaml:"allow-lan" json:"allow-lan"`
+	BindAddress        string       `yaml:"bind-address" json:"bind-address"`
+	Mode               T.TunnelMode `yaml:"mode" json:"mode"`
+	LogLevel           log.LogLevel `yaml:"log-level" json:"log-level"`
+	IPv6               bool         `yaml:"ipv6" json:"ipv6"`
+	ExternalController string       `yaml:"external-controller" json:"external-controller"`
+	ExternalUI         string       `yaml:"external-ui" json:"external-ui"`
+	Secret             string       `yaml:"secret" json:"secret"`
+	Interface          string       `yaml:"interface-name" json:"interface-name"`
+	RoutingMark        int          `yaml:"routing-mark" json:"routing-mark"`
 
-	ProxyProvider map[string]map[string]interface{} `json:"proxy-providers"`
-	Hosts         map[string]string                 `json:"hosts"`
-	DNS           RawDNS                            `json:"dns"`
-	Experimental  clashConfig.Experimental          `json:"experimental"`
-	Proxy         []map[string]interface{}          `json:"proxies"`
-	ProxyGroup    []map[string]interface{}          `json:"proxy-groups"`
-	Rule          []string                          `json:"rules"`
+	ProxyProvider map[string]map[string]any `yaml:"proxy-providers" json:"proxy-providers"`
+	Hosts         map[string]string         `yaml:"hosts" json:"hosts"`
+	DNS           RawDNS                    `yaml:"dns" json:"dns"`
+	Experimental  clashConfig.Experimental  `yaml:"experimental" json:"experimental"`
+	Profile       Profile                   `yaml:"profile" json:"profile"`
+	Proxy         []map[string]any          `yaml:"proxies" json:"proxies"`
+	ProxyGroup    []map[string]any          `yaml:"proxy-groups" json:"proxy-groups"`
+	Rule          []string                  `yaml:"rules" json:"rules"`
 }
 
 // Parse config
@@ -104,20 +117,24 @@ func UnmarshalRawConfig(profile string, cfg string) (*RawConfig, error) {
 		LogLevel:       log.INFO,
 		Hosts:          map[string]string{},
 		Rule:           []string{},
-		Proxy:          []map[string]interface{}{},
-		ProxyGroup:     []map[string]interface{}{},
+		Proxy:          []map[string]any{},
+		ProxyGroup:     []map[string]any{},
 		DNS: RawDNS{
 			Enable:      false,
 			UseHosts:    true,
 			FakeIPRange: "198.18.0.1/16",
 			FallbackFilter: RawFallbackFilter{
-				GeoIP:  true,
-				IPCIDR: []string{},
+				GeoIP:     true,
+				GeoIPCode: "CN",
+				IPCIDR:    []string{},
 			},
 			DefaultNameserver: []string{
 				"114.114.114.114",
 				"8.8.8.8",
 			},
+		},
+		Profile: Profile{
+			StoreSelected: true,
 		},
 	}
 
